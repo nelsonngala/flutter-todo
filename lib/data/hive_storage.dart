@@ -13,7 +13,11 @@ class HiveStorage {
   Future<List<TaskModel>>? getTasks() async {
     final box = await init();
     List<TaskModel> taskModel = box.values.toList();
+
+    //  var sortList = taskModel.map((e) => e.timeOfDay.hour).toList();
+    //sortList.sort();
     taskModel.sort(((a, b) => a.createdAt.compareTo(b.createdAt)));
+    // taskModel.sort(((a, b) => a.timeOfDay.compareTo(b.timeOfDay)));
     return taskModel; //.values.toList();
   }
 
@@ -38,6 +42,7 @@ class HiveStorage {
             id: taskModel.id,
             note: taskModel.note,
             createdAt: taskModel.createdAt,
+            timeOfDay: taskModel.timeOfDay,
             isCompleted: !taskModel.isCompleted));
   }
   //TaskModel? taskModel;

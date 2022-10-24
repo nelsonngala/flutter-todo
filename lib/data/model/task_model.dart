@@ -15,20 +15,26 @@ class TaskModel extends HiveObject {
   final DateTime createdAt;
   @HiveField(3)
   bool isCompleted;
+  @HiveField(4)
+  final DateTime timeOfDay;
 
   TaskModel({
     // required this.id,
     required this.id,
     required this.note,
     required this.createdAt,
+    required this.timeOfDay,
     required this.isCompleted,
   });
 
   factory TaskModel.create(
-          {required String note, required DateTime? dateTime}) =>
+          {required String note,
+          required DateTime? dateTime,
+          required DateTime? timeOfDay}) =>
       TaskModel(
           id: const Uuid().v1(),
           note: note,
           createdAt: dateTime ?? DateTime.now(),
+          timeOfDay: timeOfDay ?? DateTime.now(),
           isCompleted: false);
 }

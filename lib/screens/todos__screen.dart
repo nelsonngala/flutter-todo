@@ -16,14 +16,16 @@ class TodosScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFa8dadc),
       appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: ((context) => const CompletedTodos())));
-            },
-            icon: const Icon(Icons.done_outline_outlined)),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: ((context) => const CompletedTodos())));
+              },
+              icon: const Icon(Icons.done_outline_outlined))
+        ],
         backgroundColor: const Color(0xFF1d3557),
-        title: const Text('All Todos'),
+        title: const Text('What would you like to do?'),
       ),
       floatingActionButton: FloatingActionButton(
         foregroundColor: const Color(0xFF1d3557),
@@ -80,11 +82,13 @@ class TasksLoaded extends StatelessWidget {
                     .add(DeleteTaskEvent(id: e.id));
               },
               child: ListTile(
+                //  isThreeLine: true,
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: ((context) => UpdateTodoScreen(
                             todo: e.note,
                             createdAt: e.createdAt,
+                            timeOfDoing: e.timeOfDay,
                             id: e.id,
                             isCompleted: e.isCompleted,
                           ))));
@@ -97,20 +101,30 @@ class TasksLoaded extends StatelessWidget {
                           : TextDecoration.none),
                 ),
                 subtitle: Text(e.createdAt.isToday
-                    ? 'Today'
+                    ? 'Today, ${DateFormat('h:mm a').format(e.createdAt)}'
                     : e.createdAt.isTomorrow
-                        ? 'Tomorrow'
-                        : DateFormat('E, d MMM yyyy').format(e.createdAt)),
-                trailing: Checkbox(
-                    value: e.isCompleted,
-                    onChanged: (value) {
-                      // BlocProvider.of<TaskBloc>(context)
-                      //    .add(ToggleEvent(taskModel: e));
-                      Future.delayed(const Duration(seconds: 1), (() {
-                        BlocProvider.of<TaskBloc>(context)
-                            .add(ToggleEvent(taskModel: e));
-                      }));
-                    }),
+                        ? 'Tomorrow, ${DateFormat('h:mm a').format(e.createdAt)}'
+                        : e.createdAt.isYesterday
+                            ? 'yesterday, ${DateFormat('h:mm a').format(e.createdAt)}'
+                            : DateFormat('E MMM d, yyyy. h:mm a')
+                                .format(e.createdAt)),
+                //   '${DateFormat('E, d MMM yyyy').format(e.createdAt)}, ${DateFormat('h:mm a').format(e.timeOfDay)}'),
+                trailing: Transform.scale(
+                  scale: 1.5,
+                  child: Checkbox(
+                      shape: const CircleBorder(),
+                      value: e.isCompleted,
+                      onChanged: (value) {
+                        // BlocProvider.of<TaskBloc>(context)
+                        //    .add(ToggleEvent(taskModel: e));
+                        Future.delayed(const Duration(seconds: 1), (() {
+                          BlocProvider.of<TaskBloc>(context)
+                              .add(ToggleEvent(taskModel: e));
+                        }));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('task completed')));
+                      }),
+                ),
               ),
             ),
           );

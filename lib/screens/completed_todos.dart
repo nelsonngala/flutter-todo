@@ -52,6 +52,7 @@ class CompletedTodos extends StatelessWidget {
                                   builder: ((context) => UpdateTodoScreen(
                                         todo: e.note,
                                         createdAt: e.createdAt,
+                                        timeOfDoing: e.timeOfDay,
                                         id: e.id,
                                         isCompleted: e.isCompleted,
                                       ))));

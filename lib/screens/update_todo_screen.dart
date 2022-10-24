@@ -9,12 +9,14 @@ class UpdateTodoScreen extends StatefulWidget {
   final String id;
   final String todo;
   final DateTime createdAt;
+  final DateTime timeOfDoing;
   final bool isCompleted;
   const UpdateTodoScreen({
     Key? key,
     required this.id,
     required this.todo,
     required this.createdAt,
+    required this.timeOfDoing,
     required this.isCompleted,
   }) : super(key: key);
 
@@ -25,16 +27,9 @@ class UpdateTodoScreen extends StatefulWidget {
 class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
   late TextEditingController _controller;
   late TextEditingController _dateController;
+  late TextEditingController _timeController;
   late DateTime _updatedDate = widget.createdAt;
-
-  Future<DateTime?> _showDatePicker() async {
-    DateTime? dateTime = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100));
-    return dateTime;
-  }
+  late DateTime _timeOfDay = widget.timeOfDoing;
 
   @override
   void initState() {
@@ -45,6 +40,8 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
             : widget.createdAt.isTomorrow
                 ? 'Tomorrow'
                 : DateFormat('E, d MMM yyyy').format(widget.createdAt));
+    _timeController = TextEditingController(
+        text: DateFormat('hh:mm a').format(widget.timeOfDoing));
     super.initState();
   }
 
@@ -57,6 +54,29 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Future<DateTime?> showdatePicker() async {
+      DateTime? dateTime = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100));
+      return dateTime;
+    }
+
+    Future<DateTime?> showtimePicker(BuildContext context) async {
+      // DateTime now = DateTime.now();
+      TimeOfDay? selectedTime =
+          await showTimePicker(context: context, initialTime: TimeOfDay.now());
+      DateTime timeTodo = DateTime(
+        _updatedDate.year,
+        _updatedDate.month,
+        _updatedDate.day,
+        selectedTime!.hour,
+        selectedTime.minute,
+      );
+      return timeTodo;
+    }
+
     const SnackBar snackBar =
         SnackBar(content: Text('what todo cannot be empty'));
     //  late DateTime _updatedDate = widget.createdAt;
@@ -72,6 +92,7 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
           }
           TaskModel taskModel = TaskModel(
               createdAt: _updatedDate,
+              timeOfDay: _timeOfDay,
               id: widget.id,
               note: _controller.text.trim(),
               isCompleted: widget.isCompleted);
@@ -81,7 +102,9 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
         },
         child: const Icon(Icons.done_outline_outlined),
       ),
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Update todo'),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -112,7 +135,7 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
                 decoration: const InputDecoration(
                     suffixIcon: Icon(Icons.calendar_month_rounded)),
                 onTap: () async {
-                  DateTime? updatedDate = await _showDatePicker();
+                  DateTime? updatedDate = await showdatePicker();
                   if (updatedDate != null) {
                     setState(() {
                       _dateController = TextEditingController(
@@ -127,8 +150,41 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
                     setState(() {
                       _updatedDate = updatedDate;
                     });
+                    setState(() {
+                      _timeController = TextEditingController(
+                          text: DateFormat('hh:mm a').format(updatedDate));
+                    });
                   }
+                  return;
                   // _updatedDate = widget.createdAt;
+                },
+              )),
+          const SizedBox(
+            height: 5,
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 10.0, right: 50.0),
+              child: TextField(
+                readOnly: true,
+                controller: _timeController,
+                decoration: const InputDecoration(
+                    suffixIcon: Icon(Icons.watch_later_outlined)),
+                onTap: () async {
+                  DateTime? timeOfDay = await showtimePicker(context);
+                  if (timeOfDay != null) {
+                    setState(() {
+                      _timeOfDay = timeOfDay;
+                    });
+                    setState(() {
+                      _updatedDate = timeOfDay;
+                    });
+                    setState(() {
+                      _timeController = TextEditingController(
+                          text: DateFormat('hh:mm a').format(timeOfDay));
+                    });
+                  }
+
+            
                 },
               ))
         ],
@@ -137,15 +193,6 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
   }
 }
 
-// int calculateDifference(DateTime date) {
-//   DateTime now = DateTime.now();
-//   return DateTime(date.year, date.month, date.day)
-//       .difference(DateTime(now.year, now.month, now.day))
-//       .inDays;
-// }
-
-//late int days;
-//int isWhen = calculateDifference(DateTime.now());
 extension DateUtils on DateTime {
   bool get isToday {
     final now = DateTime.now();

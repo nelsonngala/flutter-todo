@@ -17,8 +17,12 @@ class AddTodoScreen extends StatefulWidget {
 class _AddTodoScreenState extends State<AddTodoScreen> {
   late TextEditingController _dateController;
   final TextEditingController _controller = TextEditingController();
+  late TextEditingController _timeController;
 
   late DateTime now = DateTime.now();
+  //late DateTime sortTime;
+  DateTime rightNow = DateTime.now();
+  late DateTime time = DateTime(rightNow.year, rightNow.month, 0, 0, 0, 0);
   Future<DateTime?> _showDatePicker() async {
     DateTime? dateTime = await showDatePicker(
         context: context,
@@ -26,6 +30,21 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
         firstDate: DateTime(2000),
         lastDate: DateTime(2100));
     return dateTime;
+  }
+
+  Future<DateTime?> showtimePicker() async {
+    // DateTime? newTime = await _showDatePicker();
+    TimeOfDay? selectedTime =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    DateTime timeTodo = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        selectedTime!.hour,
+        selectedTime.minute,
+        now.millisecond,
+        now.microsecond);
+    return timeTodo;
   }
 
   @override
@@ -36,6 +55,8 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
             : now.isTomorrow
                 ? 'Tomorrow'
                 : DateFormat('E, d MMM yyyy').format(now));
+    _timeController =
+        TextEditingController(text: DateFormat('h:mm a').format(time));
     super.initState();
   }
 
@@ -43,17 +64,16 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
   void dispose() {
     _controller.dispose();
     _dateController.dispose();
+    _timeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    //  DateTime newTime = now;
+    // DateTime exactTime = time;
     const SnackBar snackBar =
         SnackBar(content: Text('what todo cannot be empty'));
-
-    _showSnackBar() {
-      return ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -62,13 +82,12 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_controller.text.trim().isEmpty) {
-            _showSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
             return;
           }
           TaskModel taskModel = TaskModel.create(
-            note: _controller.text.trim(),
-            dateTime: now,
-          );
+              note: _controller.text.trim(), dateTime: now, timeOfDay: time);
           BlocProvider.of<TaskBloc>(context).add(AddTaskEvent(taskModel));
           Navigator.of(context).pop();
         },
@@ -119,8 +138,51 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                     setState(() {
                       now = updatedDate;
                     });
+                    // setState(() {
+                    //   time = updatedDate;
+                    // });
+                    //  sortTime = updatedDate;
                   }
+                  //   now = updatedDate!;
                   // _updatedDate = widget.createdAt;
+                },
+              )),
+          const SizedBox(
+            height: 5,
+          ),
+          Container(
+              margin: const EdgeInsets.only(left: 10.0, right: 50.0),
+              child: TextField(
+                readOnly: true,
+                controller: _timeController,
+                decoration: const InputDecoration(
+                    suffixIcon: Icon(Icons.watch_later_outlined)),
+                onTap: () async {
+                  DateTime? timeOfDay = await showtimePicker();
+                  if (timeOfDay != null) {
+                    setState(() {
+                      // DateTime timeToAdd = DateTime(now.year, now.month,
+                      //     now.day, timeOfDay.hour, timeOfDay.minute);
+                      time = timeOfDay;
+                      // now = timeOfDay;
+                    });
+                    setState(() {
+                      now = timeOfDay;
+                    });
+                    setState(() {
+                      _timeController = TextEditingController(
+                          text: DateFormat('h:mm a').format(timeOfDay));
+                    });
+                  }
+                  // setState(() {
+                  //   now = time;
+                  // });
+                  //  else {
+                  //   setState(() {
+                  //     time = DateTime(now.year, now.month, now.day,
+                  //         rightNow.hour, rightNow.minute);
+                  //   });
+                  // }
                 },
               ))
         ],
@@ -128,8 +190,6 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
     );
   }
 }
-
-
 
 
   // onPressed: () {
