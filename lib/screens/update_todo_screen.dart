@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_with_bloc/screens/notifications/local_notifications.dart';
 import 'package:intl/intl.dart';
 
 import 'package:hive_with_bloc/data/model/task_model.dart';
@@ -30,6 +31,7 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
   late TextEditingController _timeController;
   late DateTime _updatedDate = widget.createdAt;
   late DateTime _timeOfDay = widget.timeOfDoing;
+  late LocalNotifications _notifications;
 
   @override
   void initState() {
@@ -42,6 +44,10 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
                 : DateFormat('E, d MMM yyyy').format(widget.createdAt));
     _timeController = TextEditingController(
         text: DateFormat('hh:mm a').format(widget.timeOfDoing));
+
+    //implementing local notification
+    _notifications = LocalNotifications(context);
+    _notifications.initialize();
     super.initState();
   }
 
@@ -183,10 +189,21 @@ class _UpdateTodoScreenState extends State<UpdateTodoScreen> {
                           text: DateFormat('hh:mm a').format(timeOfDay));
                     });
                   }
-
-            
                 },
-              ))
+              )),
+          ElevatedButton(
+              onPressed: () {
+                _notifications.showNotification(
+                    id: _updatedDate.minute +
+                        _updatedDate.day +
+                        _updatedDate.second,
+                    title: _controller.text,
+                    body: _timeController.text,
+                    dateTime: _updatedDate);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('You will be notified in due time!')));
+              },
+              child: const Text('Notify me?'))
         ],
       ),
     );

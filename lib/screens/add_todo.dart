@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_with_bloc/screens/update_todo_screen.dart';
 import 'package:intl/intl.dart';
 
 import '../data/model/task_model.dart';
 import '../logic/bloc/task_bloc.dart';
+import 'notifications/local_notifications.dart';
 
 class AddTodoScreen extends StatefulWidget {
   const AddTodoScreen({super.key});
@@ -18,35 +20,15 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
   late TextEditingController _dateController;
   final TextEditingController _controller = TextEditingController();
   late TextEditingController _timeController;
+  late LocalNotifications _notifications;
 
   late DateTime now = DateTime.now();
-  //late DateTime sortTime;
+
   DateTime rightNow = DateTime.now();
   late DateTime time = DateTime(rightNow.year, rightNow.month, 0, 0, 0, 0);
-  Future<DateTime?> _showDatePicker() async {
-    DateTime? dateTime = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100));
-    return dateTime;
-  }
 
-  Future<DateTime?> showtimePicker() async {
-    // DateTime? newTime = await _showDatePicker();
-    TimeOfDay? selectedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
-    DateTime timeTodo = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        selectedTime!.hour,
-        selectedTime.minute,
-        now.millisecond,
-        now.microsecond);
-    return timeTodo;
-  }
-
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   @override
   void initState() {
     _dateController = TextEditingController(
@@ -57,6 +39,11 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                 : DateFormat('E, d MMM yyyy').format(now));
     _timeController =
         TextEditingController(text: DateFormat('h:mm a').format(time));
+
+    //implementing local scheduled notifications
+    _notifications = LocalNotifications(context);
+    _notifications.initialize();
+
     super.initState();
   }
 
@@ -70,10 +57,30 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //  DateTime newTime = now;
-    // DateTime exactTime = time;
     const SnackBar snackBar =
         SnackBar(content: Text('what todo cannot be empty'));
+    Future<DateTime?> showdatePicker() async {
+      DateTime? dateTime = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100));
+      return dateTime;
+    }
+
+    Future<DateTime?> showtimePicker() async {
+      // DateTime? newTime = await _showDatePicker();
+      TimeOfDay? selectedTime =
+          await showTimePicker(context: context, initialTime: TimeOfDay.now());
+      DateTime timeTodo = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        selectedTime!.hour,
+        selectedTime.minute,
+      );
+      return timeTodo;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -123,7 +130,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                 decoration: const InputDecoration(
                     suffixIcon: Icon(Icons.calendar_month_rounded)),
                 onTap: () async {
-                  DateTime? updatedDate = await _showDatePicker();
+                  DateTime? updatedDate = await showdatePicker();
                   if (updatedDate != null) {
                     setState(() {
                       _dateController = TextEditingController(
@@ -133,18 +140,11 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                                   ? 'Tomorrow'
                                   : DateFormat('E, d MMM yyyy')
                                       .format(updatedDate));
-                      // _updatedDate = updatedDate;
                     });
                     setState(() {
                       now = updatedDate;
                     });
-                    // setState(() {
-                    //   time = updatedDate;
-                    // });
-                    //  sortTime = updatedDate;
                   }
-                  //   now = updatedDate!;
-                  // _updatedDate = widget.createdAt;
                 },
               )),
           const SizedBox(
@@ -161,10 +161,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                   DateTime? timeOfDay = await showtimePicker();
                   if (timeOfDay != null) {
                     setState(() {
-                      // DateTime timeToAdd = DateTime(now.year, now.month,
-                      //     now.day, timeOfDay.hour, timeOfDay.minute);
                       time = timeOfDay;
-                      // now = timeOfDay;
                     });
                     setState(() {
                       now = timeOfDay;
@@ -174,29 +171,24 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                           text: DateFormat('h:mm a').format(timeOfDay));
                     });
                   }
-                  // setState(() {
-                  //   now = time;
-                  // });
-                  //  else {
-                  //   setState(() {
-                  //     time = DateTime(now.year, now.month, now.day,
-                  //         rightNow.hour, rightNow.minute);
-                  //   });
-                  // }
                 },
-              ))
+              )),
+          const SizedBox(
+            height: 10,
+          ),
+          ElevatedButton(
+              onPressed: () {
+                _notifications.showNotification(
+                    id: now.minute + now.day + now.second,
+                    title: _controller.text,
+                    body: _timeController.text,
+                    dateTime: now);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('You will be notified in due time!')));
+              },
+              child: const Text("Notify me?")),
         ],
       ),
     );
   }
 }
-
-
-  // onPressed: () {
-  //               TaskModel taskModel = TaskModel.create(
-  //                 note: _controller.text,
-  //                 dateTime: _dateTime,
-  //               );
-  //               BlocProvider.of<TaskBloc>(context).add(AddTaskEvent(taskModel));
-  //               Navigator.of(context).pop();
-  //             },
