@@ -1,16 +1,12 @@
 # hive_with_bloc
 
-A new Flutter project.
+flutter todo app, hive local database and bloc for state management,
 
-## Getting Started
+##features
+-Perfom all CRUD operations.
+-User can request notification when todo/task is due.
+-User can delete all completed todos/tasks. 
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#Extras
+-Custom launcher icon.
+-custom notification icon.
