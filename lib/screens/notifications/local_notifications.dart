@@ -17,7 +17,7 @@ class LocalNotifications {
   Future<void> initialize() async {
     tz.initializeTimeZones();
     const AndroidInitializationSettings androidInitializationSettings =
-        AndroidInitializationSettings("@mipmap/ic_launcher");
+        AndroidInitializationSettings("@drawable/ic_stat_todolistno");
     DarwinInitializationSettings iosInitializationSettings =
         DarwinInitializationSettings(
             requestAlertPermission: true,

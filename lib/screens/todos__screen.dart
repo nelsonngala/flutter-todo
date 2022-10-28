@@ -25,7 +25,7 @@ class TodosScreen extends StatelessWidget {
               icon: const Icon(Icons.done_outline_outlined))
         ],
         backgroundColor: const Color(0xFF1d3557),
-        title: const Text('What would you like to do?'),
+        title: const Text('What to do?'),
       ),
       floatingActionButton: FloatingActionButton(
         foregroundColor: const Color(0xFF1d3557),
